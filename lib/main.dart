@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,29 +12,49 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Calculadora Flex',
+      title: 'Atividade 05',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const CalculadoraFlexPage(),
+      home: const Atividade05Page(),
     );
   }
 }
 
-class CalculadoraFlexPage extends StatefulWidget {
-  const CalculadoraFlexPage({super.key});
+class Atividade05Page extends StatefulWidget {
+  const Atividade05Page({super.key});
 
   @override
-  State<CalculadoraFlexPage> createState() => _CalculadoraFlexPageState();
+  State<Atividade05Page> createState() => _Atividade05PageState();
 }
 
-class _CalculadoraFlexPageState extends State<CalculadoraFlexPage> {
+class _Atividade05PageState extends State<Atividade05Page> {
   final TextEditingController _etanolController = TextEditingController();
   final TextEditingController _gasolinaController = TextEditingController();
 
   String _resultado = 'Informe os preços para calcular.';
   String _detalhe = '';
+
+  bool _checkboxMarcado = false;
+  bool _switchLigado = true;
+  int _radioSelecionado = 1;
+  double _sliderValor = 50;
+
+  Future<void> _abrirLink(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    final bool abriu = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!abriu && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o link.')),
+      );
+    }
+  }
 
   void _calcularMelhorCombustivel() {
     final double? etanol = double.tryParse(
@@ -75,6 +96,26 @@ class _CalculadoraFlexPageState extends State<CalculadoraFlexPage> {
     });
   }
 
+  Widget _tituloSecao(String texto) {
+    return Text(
+      texto,
+      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _tituloClicavel(String texto, String url) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
+        onPressed: () => _abrirLink(url),
+        child: Text(
+          texto,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _etanolController.dispose();
@@ -85,103 +126,192 @@ class _CalculadoraFlexPageState extends State<CalculadoraFlexPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculadora Flex'), centerTitle: true),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.local_gas_station,
-                  size: 100,
-                  color: Colors.green,
+      appBar: AppBar(title: const Text('Atividade 05'), centerTitle: true),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Card(
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    _tituloSecao('Calculadora Flex'),
+                    const SizedBox(height: 16),
+                    const Icon(
+                      Icons.local_gas_station,
+                      size: 90,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _etanolController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Preço do etanol',
+                        hintText: 'Ex: 4,29',
+                        prefixIcon: Icon(Icons.attach_money),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _gasolinaController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Preço da gasolina',
+                        hintText: 'Ex: 6,19',
+                        prefixIcon: Icon(Icons.attach_money),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _calcularMelhorCombustivel,
+                        child: const Text('Calcular'),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _limparCampos,
+                        child: const Text('Limpar'),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      _resultado,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (_detalhe.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _detalhe,
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Descubra qual combustível compensa mais',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 28),
-                TextField(
-                  controller: _etanolController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Preço do etanol',
-                    hintText: 'Ex: 4,29',
-                    prefixIcon: Icon(Icons.attach_money),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _gasolinaController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Preço da gasolina',
-                    hintText: 'Ex: 6,19',
-                    prefixIcon: Icon(Icons.attach_money),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _calcularMelhorCombustivel,
-                    child: const Text('Calcular'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: _limparCampos,
-                    child: const Text('Limpar'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Card(
-                  elevation: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
+              ),
+            ),
+            const SizedBox(height: 20),
+            Card(
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _tituloSecao('Exemplos de Widgets'),
+                    const SizedBox(height: 12),
+
+                    // ALTERE AQUI os links se quiser trocar pela doc em PT/EN
+                    _tituloClicavel(
+                      'Checkbox',
+                      'https://api.flutter.dev/flutter/material/Checkbox-class.html',
+                    ),
+                    Row(
                       children: [
-                        const Text(
-                          'Resultado',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Checkbox(
+                          value: _checkboxMarcado,
+                          onChanged: (value) {
+                            setState(() {
+                              _checkboxMarcado = value ?? false;
+                            });
+                          },
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _resultado,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        if (_detalhe.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            _detalhe,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
+                        Text(_checkboxMarcado ? 'Marcado' : 'Desmarcado'),
                       ],
                     ),
-                  ),
+
+                    const SizedBox(height: 10),
+
+                    _tituloClicavel(
+                      'Switch',
+                      'https://api.flutter.dev/flutter/material/Switch-class.html',
+                    ),
+                    Row(
+                      children: [
+                        Switch(
+                          value: _switchLigado,
+                          onChanged: (value) {
+                            setState(() {
+                              _switchLigado = value;
+                            });
+                          },
+                        ),
+                        Text(_switchLigado ? 'Ligado' : 'Desligado'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _tituloClicavel(
+                      'Radio',
+                      'https://api.flutter.dev/flutter/material/Radio-class.html',
+                    ),
+                    RadioListTile<int>(
+                      title: const Text('Opção 1'),
+                      value: 1,
+                      groupValue: _radioSelecionado,
+                      onChanged: (value) {
+                        setState(() {
+                          _radioSelecionado = value!;
+                        });
+                      },
+                    ),
+                    RadioListTile<int>(
+                      title: const Text('Opção 2'),
+                      value: 2,
+                      groupValue: _radioSelecionado,
+                      onChanged: (value) {
+                        setState(() {
+                          _radioSelecionado = value!;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _tituloClicavel(
+                      'Slider',
+                      'https://api.flutter.dev/flutter/material/Slider-class.html',
+                    ),
+                    Slider(
+                      value: _sliderValor,
+                      min: 0,
+                      max: 100,
+
+                      // ALTERE AQUI se quiser mais ou menos divisões
+                      divisions: 10,
+
+                      label: _sliderValor.toStringAsFixed(0),
+                      onChanged: (value) {
+                        setState(() {
+                          _sliderValor = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      'Valor atual do slider: ${_sliderValor.toStringAsFixed(0)}',
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
