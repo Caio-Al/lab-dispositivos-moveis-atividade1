@@ -1,6 +1,4 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,100 +11,171 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Frase do Dia',
+      title: 'Calculadora Flex',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const FraseDoDiaPage(),
+      home: const CalculadoraFlexPage(),
     );
   }
 }
 
-class FraseDoDiaPage extends StatefulWidget {
-  const FraseDoDiaPage({super.key});
+class CalculadoraFlexPage extends StatefulWidget {
+  const CalculadoraFlexPage({super.key});
 
   @override
-  State<FraseDoDiaPage> createState() => _FraseDoDiaPageState();
+  State<CalculadoraFlexPage> createState() => _CalculadoraFlexPageState();
 }
 
-class _FraseDoDiaPageState extends State<FraseDoDiaPage> {
-  final List<Map<String, String>> _conteudos = [
-    {
-      'frase':
-          'O sucesso é a soma de pequenos esforços repetidos todos os dias.',
-      'imagem': 'assets/images/frase1.jpg',
-    },
-    {
-      'frase':
-          'Acredite no processo, mesmo quando o resultado ainda não apareceu.',
-      'imagem': 'assets/images/frase2.jpg',
-    },
-    {
-      'frase': 'Grandes conquistas começam com a decisão de tentar.',
-      'imagem': 'assets/images/frase3.jpg',
-    },
-    {
-      'frase': 'Cada novo dia é uma nova chance para mudar sua história.',
-      'imagem': 'assets/images/frase4.jpg',
-    },
-  ];
+class _CalculadoraFlexPageState extends State<CalculadoraFlexPage> {
+  final TextEditingController _etanolController = TextEditingController();
+  final TextEditingController _gasolinaController = TextEditingController();
 
-  int _indiceAtual = 0;
+  String _resultado = 'Informe os preços para calcular.';
+  String _detalhe = '';
 
-  void _sortearFrase() {
-    final random = Random();
-    int novoIndice = _indiceAtual;
+  void _calcularMelhorCombustivel() {
+    final double? etanol = double.tryParse(
+      _etanolController.text.replaceAll(',', '.').trim(),
+    );
 
-    while (novoIndice == _indiceAtual && _conteudos.length > 1) {
-      novoIndice = random.nextInt(_conteudos.length);
+    final double? gasolina = double.tryParse(
+      _gasolinaController.text.replaceAll(',', '.').trim(),
+    );
+
+    if (etanol == null || gasolina == null || etanol <= 0 || gasolina <= 0) {
+      setState(() {
+        _resultado = 'Digite valores válidos maiores que zero.';
+        _detalhe = '';
+      });
+      return;
     }
 
+    final double proporcao = etanol / gasolina;
+
     setState(() {
-      _indiceAtual = novoIndice;
+      _detalhe = 'Proporção: ${(proporcao * 100).toStringAsFixed(1)}%';
+
+      if (proporcao <= 0.70) {
+        _resultado = 'Melhor abastecer com etanol.';
+      } else {
+        _resultado = 'Melhor abastecer com gasolina.';
+      }
+    });
+  }
+
+  void _limparCampos() {
+    _etanolController.clear();
+    _gasolinaController.clear();
+
+    setState(() {
+      _resultado = 'Informe os preços para calcular.';
+      _detalhe = '';
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final itemAtual = _conteudos[_indiceAtual];
+  void dispose() {
+    _etanolController.dispose();
+    _gasolinaController.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Frase do Dia'), centerTitle: true),
+      appBar: AppBar(title: const Text('Calculadora Flex'), centerTitle: true),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  itemAtual['imagem']!,
-                  height: 260,
-                  fit: BoxFit.cover,
+                const Icon(
+                  Icons.local_gas_station,
+                  size: 100,
+                  color: Colors.green,
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  itemAtual['frase']!,
+                const SizedBox(height: 20),
+                const Text(
+                  'Descubra qual combustível compensa mais',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                    height: 1.4,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 28),
+                TextField(
+                  controller: _etanolController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Preço do etanol',
+                    hintText: 'Ex: 4,29',
+                    prefixIcon: Icon(Icons.attach_money),
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _gasolinaController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Preço da gasolina',
+                    hintText: 'Ex: 6,19',
+                    prefixIcon: Icon(Icons.attach_money),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 SizedBox(
-                  width: 220,
+                  width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _sortearFrase,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text(
-                      'Nova frase',
-                      style: TextStyle(fontSize: 18),
+                    onPressed: _calcularMelhorCombustivel,
+                    child: const Text('Calcular'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _limparCampos,
+                    child: const Text('Limpar'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  elevation: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Resultado',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _resultado,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        if (_detalhe.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            _detalhe,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
